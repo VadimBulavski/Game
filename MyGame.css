@@ -1,5 +1,20 @@
+body{
+    background: url("img/gomoku300.jpg") no-repeat;
+    background-size: 100%;
+}
+
 #field{
     opacity: 0;
     width: 20px;
     height: 20px;
+    margin-top: 20px;
+    margin-right: 20px;
+}
+.inputText{
+    color: aliceblue;
+}
+
+#select{
+    float: left;
+    margin-left: 10px;
 }
