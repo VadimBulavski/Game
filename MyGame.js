@@ -1,8 +1,8 @@
 /**
  * Created by admin on 13.09.2016.
  */
-var colsMin = 10;
-var rowsMin = 10;
+var colsMin = 15;
+var rowsMin = 15;
 var colsMax = 100;
 var rowsMax = 100;
 var cross = "X";
@@ -13,6 +13,15 @@ var field;
 var arrayBut = [];
 var hod = 0;
 var game = false;
+var message = document.getElementById('message');
+var messageBox = document.getElementById('divMessage');
+var createButton = document.getElementById('start');
+var leftRightArray = [];
+var topBottomArray = [];
+var topLeftBottomRightArray = [];
+var bottomLeftTopRightArray = [];
+
+createButton.onclick = checkInput;
 
 function creatField(col, row) {
     var str = "<table id='tableField' style='border-spacing: inherit'>";
@@ -35,7 +44,7 @@ function creatField(col, row) {
             butEl.style.width = "50px";
             butEl.style.height = "50px";
             butEl.style.position = "relative";
-            butEl.style.backgroundColor = "orange";
+            butEl.style.backgroundColor = "chocolate";
             butEl.style.border = "1px solid";
             butEl.style.textAlign = "center";
             butEl.style.lineHeight = "50px";
@@ -48,8 +57,8 @@ function creatField(col, row) {
         }
     }
 
-    $('#field').animate({height: "100%", opacity: 0.5}, "slow");
-    $('#field').animate({width: "100%", opacity: 1}, "slow");
+    $('#field').animate({height: "100%", opacity: 0.5}, 2000);
+    $('#field').animate({width: "100%", opacity: 1}, 2000);
 
     console.log(arrayBut);
 }
@@ -58,15 +67,16 @@ function checkInput() {
     var colsUser = document.getElementById('col').value;
     var rowsUser = document.getElementById('row').value;
     if(colsUser < colsMin || rowsUser < rowsMin || colsUser > colsMax || rowsUser > rowsMax){
-        alert("Некорректный ввод! Будут применены стандартные настройки!");
-        creatField(colsMin, rowsMin);
+        displayMessage("Некорректный ввод! Будут применены стандартные настройки!");
+        function redyField() {
+            creatField(colsMin, rowsMin);
+        }
+        setTimeout(redyField, 7000);
     }
     else
         creatField(colsUser, rowsUser);
+    this.value = this.value != 'заново'?'заново':'играть';
 }
-
-var createButton = document.getElementById('start');
-createButton.onclick = checkInput;
 
 function next(coo) {
     return function () {
@@ -80,7 +90,7 @@ function next(coo) {
             $(this).animate({left: "50%", width: "2px"});
             if (hod % 2 == 0) {
                 text.textContent = cross;
-                text.style.color = "red";
+                text.style.color = "crimson";
                 $(this).animate({width: "50px", left: "0%"});
                 $(text).fadeIn(1000);
                 hod++;
@@ -108,96 +118,147 @@ function gameOver(x, y, str) {
         var topRightCount = topRightElementCounter(x ,y, str);
         var bottomLeftCount = bottomLeftElementCounter(x ,y, str);
         var bottomRightCount = bottomRightElementCounter(x, y, str);
-        console.log(topLeftCount);
-        if((leftCount + rightCount) == winNumber - 1 || (topCount + bottomCount) == winNumber - 1 ||
-            (topLeftCount + bottomRightCount) == winNumber - 1 || (topRightCount + bottomLeftCount) == winNumber - 1){
-            function funcWin() {
-                alert("Победили - "+ str);
-            }
-            setTimeout(funcWin, 800);
-            return true;
-        }
+
+
+        isWin(leftRightArray, leftCount, rightCount, str);
+        isWin(topBottomArray, topCount, bottomCount, str);
+        isWin(topLeftBottomRightArray, topLeftCount, bottomRightCount, str);
+        isWin(bottomLeftTopRightArray, bottomLeftCount, topRightCount, str);
         if((leftCount + rightCount) == winNumber - 2 || (topCount + bottomCount) == winNumber - 2 ||
             (topLeftCount + bottomRightCount) == winNumber - 2 || (topRightCount + bottomLeftCount) == winNumber - 2){
-            function func() {
-                alert(str + " остался 1 ход до победы!");
-            }
-            setTimeout(func, 800);
+            displayMessage(str +"-кам"+ " остался 1 ход до победы!");
         }
     }
+}
+
+function isWin(array, cooX, cooY, str) {
+    if((cooX + cooY) == winNumber - 1){
+        displayMessage("Победили: "+ str + "-ки");
+        editElements(array, str);
+        return true;
+    }
+    else {
+        delete array;
+    }
+}
+
+function editElements(array, str) {
+    for(var i = 0; i < array.length; ++i){
+        if(str == "X"){
+            array[i].style.backgroundColor = "green";
+        }
+        else{
+            array[i].style.backgroundColor = "red";
+        }
+    }
+}
+
+function displayMessage(str) {
+    message.textContent = str;
+    messageBox.style.display = "block";
+    $(messageBox).animate({opacity: 1}, 2000);
+    function timeMessage() {
+        $(messageBox).animate({opacity: 0}, 2000);
+    }
+    setTimeout(timeMessage, 5000);
+
+    function hiddenBox() {
+        messageBox.style.display = "none";
+    }
+    setTimeout(hiddenBox, 7000);
 }
 
 
 function leftElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x][y - i].textContent != str || arrayBut[x][y - i] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(y - i >=0 && arrayBut[x][y - i].textContent == str){
+            count ++;
+            leftRightArray.push(arrayBut[x][y-i]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
 
 function rightElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x][y + i].textContent != str || arrayBut[x][y + i] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(y + i < arrayBut[x].length &&
+            arrayBut[x][y + i].textContent == str){
+            count ++;
+            leftRightArray.push(arrayBut[x][y+i]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
 
 function topElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x - i][y].textContent != str || arrayBut[x - i][y] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(x - i >=0 && arrayBut[x - i][y].textContent == str){
+            count ++;
+            topBottomArray.push(arrayBut[x-i][y]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
 
 function bottomElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x + i][y].textContent != str || arrayBut[x + i][y] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(x + i < arrayBut.length &&
+            arrayBut[x + i][y].textContent == str){
+            count ++;
+            topBottomArray.push(arrayBut[x+i][y]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
 
 function topLeftElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x - i][y - i].textContent != str || arrayBut[x - i][y - i] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(x - i >=0 && y - i >=0 &&
+            arrayBut[x - i][y - i].textContent == str){
+            count ++;
+            topLeftBottomRightArray.push(arrayBut[x-i][y-i]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
 
 function topRightElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x - i][y + i] != null){
-            if(arrayBut[x - i][y + i].textContent != str)
-                break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(x - i >=0 && y + i < arrayBut[x].length &&
+            arrayBut[x - i][y + i].textContent == str){
+            count ++;
+            bottomLeftTopRightArray.push(arrayBut[x-i][y+i]);
         }
     }
-    return i-1;
+    return count - 1;
 }
 
 function bottomLeftElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x + i][y - i].textContent != str || arrayBut[x + i][y - i] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(x + i < arrayBut.length && y - i >=0 &&
+            arrayBut[x + i][y - i].textContent == str){
+            count ++;
+            bottomLeftTopRightArray.push(arrayBut[x+i][y-i]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
 
 function bottomRightElementCounter(x, y, str) {
-    var i;
-    for(i = 0; i < winNumber; ++i){
-        if(arrayBut[x + i][y + i].textContent != str || arrayBut[x + i][y + i] == null)
-            break;
+    var count = 0;
+    for(var i = 0; i < winNumber; ++i){
+        if(x + i < arrayBut.length && y + i < arrayBut[x].length &&
+            arrayBut[x + i][y + i].textContent == str){
+            count ++;
+            topLeftBottomRightArray.push(arrayBut[x+i][y+i]);
+        }
     }
-    return i-1;
+    return count - 1;
 }
