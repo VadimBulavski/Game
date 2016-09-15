@@ -20,8 +20,31 @@ var leftRightArray = [];
 var topBottomArray = [];
 var topLeftBottomRightArray = [];
 var bottomLeftTopRightArray = [];
+var winArray = [];
 
-createButton.onclick = checkInput;
+class direct{
+    constructor(el, num){
+        this.element = el;
+        this.number = num;
+    }
+}
+// var direct = {};
+
+
+createButton.onclick = select;
+
+
+function select() {
+    if(createButton.value == 'играть'){
+        checkInput();
+        this.value = this.value != 'заново'?'заново':'играть';
+    }
+    else{
+        $('#field').animate({width: "0%", opacity: 0}, 2000);
+        this.value = this.value != 'заново'?'заново':'играть';
+    }
+
+}
 
 function creatField(col, row) {
     var str = "<table id='tableField' style='border-spacing: inherit'>";
@@ -70,12 +93,14 @@ function checkInput() {
         displayMessage("Некорректный ввод! Будут применены стандартные настройки!");
         function redyField() {
             creatField(colsMin, rowsMin);
+            colsUser.value = colsMin;
+            rowsUser.value = rowsMin;
         }
-        setTimeout(redyField, 7000);
+        setTimeout(redyField, 3000);
     }
     else
         creatField(colsUser, rowsUser);
-    this.value = this.value != 'заново'?'заново':'играть';
+
 }
 
 function next(coo) {
@@ -102,7 +127,7 @@ function next(coo) {
                 $(text).fadeIn(1000);
                 hod++;
             }
-            game = gameOver(x, y, text.textContent);
+            gameOver(x, y, text.textContent);
         }
     }
 }
@@ -110,6 +135,7 @@ function next(coo) {
 
 function gameOver(x, y, str) {
     if(str != ""){
+
         var leftCount = leftElementCounter(x, y, str);
         var rightCount = rightElementCounter(x, y, str);
         var topCount = topElementCounter(x, y, str);
@@ -119,11 +145,12 @@ function gameOver(x, y, str) {
         var bottomLeftCount = bottomLeftElementCounter(x ,y, str);
         var bottomRightCount = bottomRightElementCounter(x, y, str);
 
-
         isWin(leftRightArray, leftCount, rightCount, str);
-        isWin(topBottomArray, topCount, bottomCount, str);
+        isWin(topBottomArray, topCount, bottomCount, str);;
         isWin(topLeftBottomRightArray, topLeftCount, bottomRightCount, str);
+        console.log(topLeftBottomRightArray);
         isWin(bottomLeftTopRightArray, bottomLeftCount, topRightCount, str);
+        console.log(bottomLeftTopRightArray);
         if((leftCount + rightCount) == winNumber - 2 || (topCount + bottomCount) == winNumber - 2 ||
             (topLeftCount + bottomRightCount) == winNumber - 2 || (topRightCount + bottomLeftCount) == winNumber - 2){
             displayMessage(str +"-кам"+ " остался 1 ход до победы!");
@@ -134,23 +161,62 @@ function gameOver(x, y, str) {
 function isWin(array, cooX, cooY, str) {
     if((cooX + cooY) == winNumber - 1){
         displayMessage("Победили: "+ str + "-ки");
+        console.log(array);
         editElements(array, str);
-        return true;
+        game = true;
     }
-    else {
-        delete array;
-    }
+    return false;
 }
 
 function editElements(array, str) {
     for(var i = 0; i < array.length; ++i){
-        if(str == "X"){
-            array[i].style.backgroundColor = "green";
-        }
-        else{
-            array[i].style.backgroundColor = "red";
+        if(array[i].element.textContent == str){
+            winArray.push(array[i]);
         }
     }
+    var numberOne = 0;
+    var numberTwo = 0;
+    var numberThree = 0;
+    var numberFour = 0;
+    var numberOneArray = [];
+    var numberTwoArray = [];
+    var numberThreeArray = [];
+    var numberFhourArray = [];
+    for(var i = 0; i < winArray.length; ++i){
+        if(winArray[i].number == 1){
+            numberOneArray.push(winArray[i]);
+            numberOne++;
+        }
+        else if(winArray[i].number == 2){
+            numberTwoArray.push(winArray[i]);
+            numberTwo++;
+        }
+        else if(winArray[i].number == 3){
+            numberThreeArray.push(winArray[i]);
+            numberThree++;
+        }
+        else  if(winArray[i].number == 4){
+            numberFhourArray.push(winArray[i]);
+            numberFour++;
+        }
+    }
+    if(numberOne >= 5){
+        for(var i = 0; i < numberOneArray.length; ++i)
+            numberOneArray[i].element.style.backgroundColor = "darkslategray";
+    }
+    else if(numberTwo >= 5){
+        for(var i = 0; i < numberTwoArray.length; ++i)
+            numberTwoArray[i].element.style.backgroundColor = "darkslategray";
+    }
+    else if(numberThree >= 5){
+        for(var i = 0; i < numberThreeArray.length; ++i)
+            numberThreeArray[i].element.style.backgroundColor = "darkslategray";
+    }
+    else if(numberFour >= 5){
+        for(var i = 0; i < numberFhourArray.length; ++i)
+            numberFhourArray.element.style.backgroundColor = "darkslategray";
+    }
+
 }
 
 function displayMessage(str) {
@@ -160,12 +226,12 @@ function displayMessage(str) {
     function timeMessage() {
         $(messageBox).animate({opacity: 0}, 2000);
     }
-    setTimeout(timeMessage, 5000);
+    setTimeout(timeMessage, 3000);
 
     function hiddenBox() {
         messageBox.style.display = "none";
     }
-    setTimeout(hiddenBox, 7000);
+    setTimeout(hiddenBox, 5000);
 }
 
 
@@ -174,10 +240,10 @@ function leftElementCounter(x, y, str) {
     for(var i = 0; i < winNumber; ++i){
         if(y - i >=0 && arrayBut[x][y - i].textContent == str){
             count ++;
-            leftRightArray.push(arrayBut[x][y-i]);
+            leftRightArray.push(new direct(arrayBut[x][y-i], 1));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function rightElementCounter(x, y, str) {
@@ -186,10 +252,10 @@ function rightElementCounter(x, y, str) {
         if(y + i < arrayBut[x].length &&
             arrayBut[x][y + i].textContent == str){
             count ++;
-            leftRightArray.push(arrayBut[x][y+i]);
+            leftRightArray.push(new direct(arrayBut[x][y+i], 1));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function topElementCounter(x, y, str) {
@@ -197,10 +263,10 @@ function topElementCounter(x, y, str) {
     for(var i = 0; i < winNumber; ++i){
         if(x - i >=0 && arrayBut[x - i][y].textContent == str){
             count ++;
-            topBottomArray.push(arrayBut[x-i][y]);
+            topBottomArray.push(new direct(arrayBut[x - i][y], 2));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function bottomElementCounter(x, y, str) {
@@ -209,10 +275,10 @@ function bottomElementCounter(x, y, str) {
         if(x + i < arrayBut.length &&
             arrayBut[x + i][y].textContent == str){
             count ++;
-            topBottomArray.push(arrayBut[x+i][y]);
+            topBottomArray.push(new direct(arrayBut[x + i][y], 2));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function topLeftElementCounter(x, y, str) {
@@ -221,10 +287,10 @@ function topLeftElementCounter(x, y, str) {
         if(x - i >=0 && y - i >=0 &&
             arrayBut[x - i][y - i].textContent == str){
             count ++;
-            topLeftBottomRightArray.push(arrayBut[x-i][y-i]);
+            topLeftBottomRightArray.push(new direct(arrayBut[x - i][y - i], 3));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function topRightElementCounter(x, y, str) {
@@ -233,10 +299,10 @@ function topRightElementCounter(x, y, str) {
         if(x - i >=0 && y + i < arrayBut[x].length &&
             arrayBut[x - i][y + i].textContent == str){
             count ++;
-            bottomLeftTopRightArray.push(arrayBut[x-i][y+i]);
+            bottomLeftTopRightArray.push(new direct(arrayBut[x - i][y + i], 4));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function bottomLeftElementCounter(x, y, str) {
@@ -245,10 +311,10 @@ function bottomLeftElementCounter(x, y, str) {
         if(x + i < arrayBut.length && y - i >=0 &&
             arrayBut[x + i][y - i].textContent == str){
             count ++;
-            bottomLeftTopRightArray.push(arrayBut[x+i][y-i]);
+            bottomLeftTopRightArray.push(new direct(arrayBut[x + i][y - i], 4));
         }
     }
-    return count - 1;
+    return count-1;
 }
 
 function bottomRightElementCounter(x, y, str) {
@@ -256,9 +322,11 @@ function bottomRightElementCounter(x, y, str) {
     for(var i = 0; i < winNumber; ++i){
         if(x + i < arrayBut.length && y + i < arrayBut[x].length &&
             arrayBut[x + i][y + i].textContent == str){
+            direct.element = arrayBut[x + i][y + i];
+            direct.number = 3;
             count ++;
-            topLeftBottomRightArray.push(arrayBut[x+i][y+i]);
+            topLeftBottomRightArray.push(new direct(arrayBut[x + i][y + i], 3));
         }
     }
-    return count - 1;
+    return count-1;
 }
